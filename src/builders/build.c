@@ -811,7 +811,7 @@ static int builder_image_build(const char *config_path, const vm_build_config *c
 }
 
 static void build_usage(FILE *stream) {
-  fprintf(stream, "usage: leash build [--check] [--force] CONFIG.yml|NAME\n");
+  fprintf(stream, "usage: leash build [--check] [--force] <name|config.yml>\n");
 }
 
 static const char *kernel_compression_name(vm_build_kernel_compression compression) {
@@ -827,7 +827,7 @@ static const char *kernel_compression_name(vm_build_kernel_compression compressi
 }
 
 static void builder_info_usage(FILE *stream) {
-  fprintf(stream, "usage: leash builder NAME|CONFIG.yml\n");
+  fprintf(stream, "usage: leash builder <name|config.yml>\n");
 }
 
 static char *resolve_builder_config(const char *arg) {
