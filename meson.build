@@ -26,8 +26,13 @@ zlib_project = subproject(
     'zlib-compat=true',
     'tests=disabled',
     'default_library=static',
+    'armv8=enabled',
+    'neon=enabled',
+    'armv6=disabled',
+    'c_args=-DARM_NOCHECK_CRC32',
+    'b_lto=false',
   ],
-) 
+)
 zlib_dep = zlib_project.get_variable('zlib_ng_dep')
 
 libcurl = dependency(
