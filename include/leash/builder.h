@@ -45,4 +45,6 @@ typedef struct {
 void vm_build_config_init(vm_build_config *config);
 void vm_build_config_free(vm_build_config *config);
 
+void builder_ensure_defaults(void);
 int builder_build_main(int argc, char **argv);
+int builder_info_main(int argc, char **argv);

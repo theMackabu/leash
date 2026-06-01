@@ -1,4 +1,4 @@
-# leash 🪢
+## leash
 
 ```bash
 meson setup build

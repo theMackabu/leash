@@ -44,7 +44,15 @@ libyaml = libyaml_project.get_variable('yaml_dep')
 crprintf_project = subproject('crprintf', default_options: ['default_library=static', 'warning_level=0'])
 crprintf = crprintf_project.get_variable('crprintf_dep')
 
-leash_sources = [
+embed_text = find_program('tools/embed-text.py')
+default_ubuntu_builder = custom_target(
+  'default-ubuntu-builder',
+  input: 'builders/ubuntu.yml',
+  output: 'default_ubuntu_builder.inc',
+  command: [embed_text, '@INPUT@', '@OUTPUT@', 'default_ubuntu_builder'],
+)
+
+leash_source_files = [
   'src/builders/build.c',
   'src/builders/download.c',
   'src/builders/nocloud.c',
@@ -56,6 +64,10 @@ leash_sources = [
   'src/util.c',
 ]
 
+leash_sources = [
+  default_ubuntu_builder,
+] + leash_source_files
+
 format_file_names = [
   'include/leash/builder.h',
   'include/leash/download.h',
@@ -65,7 +77,7 @@ format_file_names = [
   'include/leash/key.h',
   'include/leash/util.h',
   'include/leash/control.h',
-] + leash_sources
+] + leash_source_files
 
 format_files = []
 foreach file_name : format_file_names

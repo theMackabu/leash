@@ -3,8 +3,8 @@
 #include "leash/key.h"
 #include "leash/util.h"
 
-#include <crprintf.h>
 #include <arpa/inet.h>
+#include <crprintf.h>
 #include <ctype.h>
 #include <dirent.h>
 #include <errno.h>

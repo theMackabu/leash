@@ -1,0 +1,30 @@
+type: image
+output: ubuntu
+arch: auto
+release: noble
+version: 24.04
+disk_size_mb: 4096
+customize: true
+
+leash:
+  cpu_count: 1
+  memory_mb: 1024
+  kernel: vmlinux
+  initrd: initrd
+  disk: disk.img
+  network: nat
+  ip: auto
+  cmdline: console=hvc0 irqfixup root=/dev/vda systemd.mask=systemd-networkd-wait-online.service
+
+downloads:
+  kernel_url: "https://cloud-images.ubuntu.com/releases/{release}/release/unpacked/ubuntu-{version}-server-cloudimg-{arch}-vmlinuz-generic"
+  initrd_url: "https://cloud-images.ubuntu.com/releases/{release}/release/unpacked/ubuntu-{version}-server-cloudimg-{arch}-initrd-generic"
+  disk_url: "https://cloud-images.ubuntu.com/releases/{release}/release/ubuntu-{version}-server-cloudimg-{arch}.tar.gz"
+  disk_archive: disk.tar.gz
+  disk_image: "{release}-server-cloudimg-{arch}.img"
+  kernel_gzip: auto_non_amd64
+
+cloud_init:
+  enabled: true
+  user: auto
+  remove_irqbalance: true

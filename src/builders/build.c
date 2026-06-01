@@ -1,7 +1,7 @@
 #include "leash/builder.h"
 #include "leash/download.h"
-#include "leash/nocloud.h"
 #include "leash/key.h"
+#include "leash/nocloud.h"
 #include "leash/util.h"
 
 #include <crprintf.h>
@@ -25,7 +25,17 @@
 #include <yaml.h>
 #include <zlib.h>
 
+#include "default_ubuntu_builder.inc"
+
 #define NOCLOUD_SEED_PATH "cidata.iso"
+
+void builder_ensure_defaults(void) {
+  char *builders = vm_builders_dir();
+  char *ubuntu = path_join(builders, "ubuntu.yml");
+  if (!file_exists(ubuntu)) write_text_file(ubuntu, default_ubuntu_builder);
+  free(ubuntu);
+  free(builders);
+}
 
 static char *host_cloud_arch(void) {
   struct utsname u;
@@ -804,6 +814,22 @@ static void build_usage(FILE *stream) {
   fprintf(stream, "usage: leash build [--check] [--force] CONFIG.yml|NAME\n");
 }
 
+static const char *kernel_compression_name(vm_build_kernel_compression compression) {
+  switch (compression) {
+  case VM_BUILD_KERNEL_AUTO_NON_AMD64:
+    return "auto_non_amd64";
+  case VM_BUILD_KERNEL_COMPRESSED:
+    return "true";
+  case VM_BUILD_KERNEL_UNCOMPRESSED:
+    return "false";
+  }
+  return "unknown";
+}
+
+static void builder_info_usage(FILE *stream) {
+  fprintf(stream, "usage: leash builder NAME|CONFIG.yml\n");
+}
+
 static char *resolve_builder_config(const char *arg) {
   if (strchr(arg, '/')) return xstrdup(arg);
   if (strstr(arg, ".yml") || strstr(arg, ".yaml")) return xstrdup(arg);
@@ -811,6 +837,45 @@ static char *resolve_builder_config(const char *arg) {
   char *file = xasprintf("%s/%s.yml", builders, arg);
   free(builders);
   return file;
+}
+
+int builder_info_main(int argc, char **argv) {
+  crprintf_set_color(isatty(STDOUT_FILENO));
+  if (argc != 1 || !strcmp(argv[0], "-h") || !strcmp(argv[0], "--help")) {
+    builder_info_usage(argc == 1 ? stdout : stderr);
+    return argc == 1 ? 0 : 1;
+  }
+
+  builder_ensure_defaults();
+  char *config_path = resolve_builder_config(argv[0]);
+  vm_build_config config;
+  vm_build_config_init(&config);
+  vm_build_config_parse_file(&config, config_path);
+  validate_config(&config, config_path);
+
+  char *name = display_name_for_output(config.output_dir);
+  crprintf("<bold>%s</bold>\n", name);
+  printf("  config: %s\n", config_path);
+  printf("  output: %s\n", config.output_dir);
+  printf("  type: %s\n", config.type ?: "unknown");
+  printf("  version: %s (%s)\n", config.version ?: "unknown", config.release ?: "unknown");
+  printf("  arch: %s\n", config.arch ?: "auto");
+  printf("  cpu: %zu\n", config.cpu_count);
+  printf("  memory: %d MB\n", config.memory_mb);
+  printf("  disk: %d MB\n", config.disk_size_mb);
+  printf("  network: %s", config.network ?: "none");
+  if (config.network_ip) printf(" (%s)", config.network_ip);
+  putchar('\n');
+  printf("  cloud-init: %s", config.cloud_init_enabled ? "on" : "off");
+  if (config.cloud_init_enabled) printf(" (user %s)", config.cloud_user ?: "auto");
+  putchar('\n');
+  printf("  kernel gzip: %s\n", kernel_compression_name(config.kernel_compression));
+  printf("  cmdline: %s\n", config.cmdline ?: "");
+
+  free(name);
+  vm_build_config_free(&config);
+  free(config_path);
+  return 0;
 }
 
 int builder_build_main(int argc, char **argv) {
@@ -836,6 +901,7 @@ int builder_build_main(int argc, char **argv) {
     return 1;
   }
 
+  builder_ensure_defaults();
   vm_build_config config;
   vm_build_config_init(&config);
   char *config_path = resolve_builder_config(config_arg);
