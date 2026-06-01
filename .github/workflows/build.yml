@@ -1,0 +1,45 @@
+name: build
+
+on:
+  push:
+    branches:
+      - master
+      - main
+    paths:
+      - meson.build
+  workflow_dispatch:
+
+jobs:
+  macos:
+    name: macOS binary
+    runs-on: macos-14
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install build tools
+        run: brew install meson ninja pkg-config clang-format
+
+      - name: Configure
+        run: meson setup build --wrap-mode=forcefallback
+
+      - name: Format check
+        run: meson compile -C build format-check
+
+      - name: Build
+        run: meson compile -C build
+
+      - name: Smoke test
+        run: |
+          ./build/leash --version
+          ./build/leash --help
+          ./build/leash build --check ubuntu
+          codesign --verify --verbose ./build/leash
+
+      - name: Upload binary
+        uses: actions/upload-artifact@v6
+        with:
+          name: leash-${{ runner.os }}-${{ runner.arch }}
+          path: build/leash
+          if-no-files-found: error
