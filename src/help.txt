@@ -1,0 +1,19 @@
+usage: leash <command> [args]
+
+options:
+  -h, --help          show help
+  --version           show version
+
+commands:
+  run                 run an instance directly
+  start   <instance>  start a configured instance
+  stop    <instance>  request graceful shutdown
+  kill    <instance>  force shutdown an instance
+  attach  <instance>  start and ssh into an instance
+  logs    <instance>  print and follow the instance log file
+  console <instance>  attach to the raw serial console
+  ip      <instance>  print cached/discovered instance IPs
+  ssh     <instance>  start and ssh into an instance
+  list, ls            list instances
+  build   <config>    build a leash instance from a yaml config
+  builder <name>      show a builder config

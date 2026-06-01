@@ -3,34 +3,30 @@
 #include "leash/run/backend.h"
 #include "leash/run/options.h"
 
+#include <help_text.inc>
 #include <stdio.h>
 #include <string.h>
 
+#ifndef LEASH_VERSION
+#define LEASH_VERSION "0.0.0"
+#endif
+
 static void usage(FILE *stream) {
-  fprintf(stream, "usage: leash <command> [args]\n"
-                  "\n"
-                  "commands:\n"
-                  "  run                 run an instance directly\n"
-                  "  start <instance>    start a configured instance\n"
-                  "  stop <instance>     request graceful shutdown\n"
-                  "  kill <instance>     force shutdown an instance\n"
-                  "  attach <instance>   start and ssh into an instance\n"
-                  "  logs <instance>     print and follow the instance log file\n"
-                  "  console <instance>  attach to the raw serial console\n"
-                  "  ip <instance>       print cached/discovered instance IPs\n"
-                  "  ssh <instance>      start and ssh into an instance\n"
-                  "  list, ls            list instances\n"
-                  "  build <config>      build a leash instance from a yaml config\n"
-                  "  builder <name>      show a builder config\n");
+  fputs(help_text, stream);
 }
 
 int main(int argc, char **argv) {
-  builder_ensure_defaults();
-
   if (argc < 2 || !strcmp(argv[1], "-h") || !strcmp(argv[1], "--help")) {
     usage(argc < 2 ? stderr : stdout);
     return argc < 2 ? 1 : 0;
   }
+
+  if (!strcmp(argv[1], "--version")) {
+    printf("leash %s\n", LEASH_VERSION);
+    return 0;
+  }
+
+  builder_ensure_defaults();
 
   if (!strcmp(argv[1], "run")) {
     vm_run_options options;

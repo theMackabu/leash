@@ -1,13 +1,19 @@
-project('leash', ['c', 'objc'], default_options: [
-  'buildtype=release',
-  'optimization=3',
-  'c_std=gnu23',
-  'default_library=static',
-  'b_lto=true',
-  'b_lto_threads=8',
-  'strip=true',
-  'warning_level=2'
-], subproject_dir: 'vendor')
+project(
+  'leash',
+  ['c', 'objc'],
+  version: '0.1.0',
+  default_options: [
+    'buildtype=release',
+    'optimization=3',
+    'c_std=gnu23',
+    'default_library=static',
+    'b_lto=true',
+    'b_lto_threads=8',
+    'strip=true',
+    'warning_level=2',
+  ],
+  subproject_dir: 'vendor',
+)
 
 inc = include_directories('include')
 
@@ -51,6 +57,12 @@ default_ubuntu_builder = custom_target(
   output: 'default_ubuntu_builder.inc',
   command: [embed_text, '@INPUT@', '@OUTPUT@', 'default_ubuntu_builder'],
 )
+help_text = custom_target(
+  'help-text',
+  input: 'src/help.txt',
+  output: 'help_text.inc',
+  command: [embed_text, '@INPUT@', '@OUTPUT@', 'help_text'],
+)
 
 leash_source_files = [
   'src/builders/build.c',
@@ -66,6 +78,7 @@ leash_source_files = [
 
 leash_sources = [
   default_ubuntu_builder,
+  help_text,
 ] + leash_source_files
 
 format_file_names = [
@@ -102,7 +115,7 @@ leash_exe = executable(
   include_directories: inc,
   dependencies: [foundation, virtualization, crprintf, libcurl, libyaml, zlib_dep],
   objc_args: ['-fobjc-arc', '-fblocks', '-Wno-nullability-completeness'],
-  c_args: ['-D_DARWIN_C_SOURCE', '-Wno-nullability-completeness'],
+  c_args: ['-D_DARWIN_C_SOURCE', '-DLEASH_VERSION="@0@"'.format(meson.project_version()), '-Wno-nullability-completeness'],
   install: true,
 )
 
