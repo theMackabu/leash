@@ -19,7 +19,30 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Install build tools
-        run: brew install meson ninja pkg-config llvm@21
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          install_if_missing() {
+            local formula="$1"
+            if ! brew list --formula "$formula" >/dev/null 2>&1; then
+              brew install "$formula"
+            fi
+          }
+
+          install_if_missing meson
+          install_if_missing ninja
+          install_if_missing pkgconf
+
+          while IFS= read -r formula; do
+            case "$formula" in
+              llvm@21) ;;
+              llvm@*) brew unlink "$formula" >/dev/null 2>&1 || true ;;
+            esac
+          done < <(brew list --formula)
+
+          install_if_missing llvm@21
+          brew link --overwrite llvm@21 >/dev/null 2>&1 || true
 
       - name: Use Clang 21
         run: |
