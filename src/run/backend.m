@@ -198,6 +198,19 @@ static void configure_networks(VZVirtualMachineConfiguration *config, const vm_r
   config.networkDevices = devices;
 }
 
+static void configure_platform(VZVirtualMachineConfiguration *config, const vm_run_options *options) {
+  if (!options->nested_virtualization) return;
+  if (@available(macOS 15.0, *)) {
+    if (!VZGenericPlatformConfiguration.nestedVirtualizationSupported)
+      fail_ns(@"Nested virtualization is not supported on this host");
+    VZGenericPlatformConfiguration *platform = [[VZGenericPlatformConfiguration alloc] init];
+    platform.nestedVirtualizationEnabled = YES;
+    config.platform = platform;
+  } else {
+    fail_ns(@"Nested virtualization requires macOS 15 or later");
+  }
+}
+
 static void install_signals(void) {
   signal_sources = [NSMutableArray array];
   int signals[] = {SIGPIPE, SIGHUP, SIGINT, SIGTERM};
@@ -258,6 +271,7 @@ int vm_run_backend(const vm_run_options *options) {
     VZVirtualMachineConfiguration *config = [[VZVirtualMachineConfiguration alloc] init];
     config.CPUCount = options->cpu_count;
     config.memorySize = options->memory_size * options->memory_size_suffix;
+    configure_platform(config, options);
     configure_boot(config, options);
 
     NSPipe *serial_in = [NSPipe pipe];

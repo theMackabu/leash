@@ -200,6 +200,8 @@ static void apply_config_value(vm_build_config *config, const char *key, const c
   else if (key_is(key, "leash.memory_mb", "memory_mb", NULL)) config->memory_mb = parse_int_value(key, value);
   else if (key_is(key, "leash.network", "network", NULL)) replace_string(&config->network, value);
   else if (key_is(key, "leash.ip", "leash.network_ip", "network_ip")) replace_string(&config->network_ip, value);
+  else if (key_is(key, "leash.nested_virtualization", "nested_virtualization", "leash.nested-virtualization"))
+    config->nested_virtualization = parse_bool_value(key, value);
   else if (key_is(key, "leash.cmdline", "cmdline", NULL)) replace_string(&config->cmdline, value);
   else if (key_is(key, "leash.kernel", "kernel", "kernel_path")) replace_string(&config->kernel_path, value);
   else if (key_is(key, "leash.initrd", "initrd", "initrd_path")) replace_string(&config->initrd_path, value);
@@ -456,9 +458,12 @@ static void write_vm_conf(const vm_build_config *config) {
               "memory-size=%d\n"
               "disk=%s\n"
               "network=%s\n"
+              "%s"
               "%s%s",
               config->kernel_path, config->initrd_path, config->cmdline, config->cpu_count, config->memory_mb,
-              config->disk_path, config->network, config->cloud_init_enabled ? "cdrom=" : "",
+              config->disk_path, config->network,
+              config->nested_virtualization ? "nested-virtualization=true\n" : "",
+              config->cloud_init_enabled ? "cdrom=" : "",
               config->cloud_init_enabled ? NOCLOUD_SEED_PATH "\n" : "");
   write_text_file("leash.conf", text);
   free(text);
@@ -866,6 +871,7 @@ int builder_info_main(int argc, char **argv) {
   printf("  network: %s", config.network ?: "none");
   if (config.network_ip) printf(" (%s)", config.network_ip);
   putchar('\n');
+  printf("  nested virtualization: %s\n", config.nested_virtualization ? "on" : "off");
   printf("  cloud-init: %s", config.cloud_init_enabled ? "on" : "off");
   if (config.cloud_init_enabled) printf(" (user %s)", config.cloud_user ?: "auto");
   putchar('\n');

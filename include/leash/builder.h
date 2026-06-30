@@ -22,6 +22,7 @@ typedef struct {
   int memory_mb;
   char *network;
   char *network_ip;
+  bool nested_virtualization;
   char *cmdline;
   char *kernel_path;
   char *initrd_path;

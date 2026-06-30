@@ -14,6 +14,7 @@ leash:
   disk: disk.img
   network: nat
   ip: auto
+  nested_virtualization: true
   cmdline: console=hvc0 irqfixup root=/dev/vda systemd.mask=systemd-networkd-wait-online.service
 
 downloads:

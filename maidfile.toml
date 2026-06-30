@@ -1,0 +1,14 @@
+[tasks.build]
+path = "build"
+script = "meson compile"
+
+[tasks.build.cache]
+path = "src"
+target = ["build/leash"]
+
+[tasks.reconfigure]
+path = "build"
+script = "meson setup --reconfigure"
+
+[tasks.setup]
+script = ['meson subprojects download', 'meson setup build --wipe']

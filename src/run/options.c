@@ -51,6 +51,7 @@ void vm_run_options_init(vm_run_options *options) {
   str_list_init(&options->folders);
   str_list_init(&options->networks);
   options->balloon = true;
+  options->nested_virtualization = false;
   options->bootloader = VM_BOOT_LINUX;
   options->efi_vars = NULL;
   options->kernel = NULL;
@@ -83,6 +84,7 @@ void vm_run_usage(FILE *stream) {
                   "  -f, --folder PATH[:TAG[:ro]]\n"
                   "  -n, --network nat|[MAC@]IFACE\n"
                   "      --balloon true|false\n"
+                  "      --nested-virtualization true|false\n"
                   "  -b, --bootloader linux|efi\n"
                   "  -e, --efi-vars PATH\n"
                   "  -k, --kernel PATH\n"
@@ -144,6 +146,10 @@ int vm_run_parse_options(vm_run_options *options, int argc, char **argv) {
     } else if (!strcmp(arg, "--balloon")) {
       char *v = take_value(argc, argv, &i, arg, inline_value);
       options->balloon = parse_bool_value(v, arg);
+      free(v);
+    } else if (!strcmp(arg, "--nested-virtualization")) {
+      char *v = take_value(argc, argv, &i, arg, inline_value);
+      options->nested_virtualization = parse_bool_value(v, arg);
       free(v);
     } else if (!strcmp(arg, "-b") || !strcmp(arg, "--bootloader")) {
       char *v = take_value(argc, argv, &i, arg, inline_value);

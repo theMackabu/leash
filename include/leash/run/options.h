@@ -20,6 +20,7 @@ typedef struct {
   str_list folders;
   str_list networks;
   bool balloon;
+  bool nested_virtualization;
   vm_bootloader_kind bootloader;
   char *efi_vars;
   char *kernel;
