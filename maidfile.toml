@@ -12,3 +12,15 @@ script = "meson setup --reconfigure"
 
 [tasks.setup]
 script = ['meson subprojects download', 'meson setup build --wipe']
+
+[tasks.install]
+script = ["maid build -q", '''
+#!/usr/bin/env bash
+if which leash >/dev/null 2>&1; then
+  dir=$(dirname "$(which leash)")
+  cp ./build/leash "$dir/leash"
+else
+  mkdir -p ~/.local/bin
+  cp ./build/leash ~/.local/bin
+fi
+''']
